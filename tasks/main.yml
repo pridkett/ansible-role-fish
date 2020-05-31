@@ -1,0 +1,44 @@
+---
+# tasks file for fish
+- name: Install Fish (homebrew)
+  homebrew:
+    name: fish
+    state: present
+  when: ansible_pkg_mgr == 'homebrew'
+  tags: install
+
+- name: Install fish (apt)
+  apt:
+    name: ['fish']
+    state: present
+    update_cache: true
+    become: yes
+  tags: install
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Create fish.d directory
+  file:
+    path: "{{ ansible_env.HOME }}/.config/fish.d"
+    state: directory
+  tags: configure
+
+- name: ensure fish binary is in /etc/shells
+  lineinfile:
+    path: /etc/shells
+    line: "{{ fish_binary_path }}"
+    state: present
+  tags: configure
+  become: true
+
+- name: set fish as default shell
+  user:
+    name: "{{ ansible_user }}"
+    shell: "{{ fish_binary_path }}"
+  become: true
+  when: fish.set_default_shell is defined and fish.set_default_shell == True
+
+- name: copy fish.config
+  template:
+    src: config.fish.j2
+    dest: "{{ ansible_env.HOME }}/.config/fish/config.fish"
+  tags: configure

@@ -1,0 +1,3 @@
+---
+# vars file for fish
+fish_binary_path: "/usr{% if ansible_pkg_mgr == 'homebrew' %}/local{% endif %}/bin/fish"

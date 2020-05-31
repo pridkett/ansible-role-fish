@@ -12,13 +12,13 @@
     name: ['fish']
     state: present
     update_cache: true
-    become: yes
+  become: yes
   tags: install
   when: ansible_pkg_mgr == 'apt'
 
 - name: Create fish.d directory
   file:
-    path: "{{ ansible_env.HOME }}/.config/fish.d"
+    path: "{{ ansible_env.HOME }}/.config/fish/fish.d"
     state: directory
   tags: configure
 

@@ -1,22 +1,14 @@
-#
-# this file is managed by ansible - do not edit
-# 
-# additional local changes be added to ~/.config/fish/fish.d
-#
-set -x PATH /usr/local/bin $PATH
-set -x GPG_TTY (tty)
+# ########################################################### #
+# this file is maintained by ansible-fish                     #
+# see: https://github.com/pridkett/ansible-fish               #
+# changes may be overwritten by future invocations of ansible #
+# ########################################################### #
 
-# disable the default fish greeting
-# see: https://stackoverflow.com/a/13995944
-set fish_greeting
+{% if 'config' in fish %}
+{{ fish['config'] }}
+{% endif %}
 
- # load additional configuration files
- for file in (find "$HOME/.config/fish/fish.d" -iname "*.fish" -type f)
-   source $file
- end
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-eval /Users/pwagstro/miniconda3/bin/conda "shell.fish" "hook" $argv | source
-# <<< conda initialize <<<
-functions -e fish_right_prompt
+# load additional configuration files
+for file in (find "$HOME/.config/fish/fish.d" -iname "*.fish" -type f)
+  source $file
+end

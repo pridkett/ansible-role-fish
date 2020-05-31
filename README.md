@@ -11,7 +11,10 @@ This role expects to work on a Mac or Linux system. It only works for the user d
 Role Variables
 --------------
 
-`fish,set_default_shell`: Whether or not `fish` should be set to the default shell after installation. This is only for the `ansible_user` user.
+* `set_default_shell`
+  * Type: Boolean
+  * Usage: If `true`, sets fish as the default shell for `ansible_user`.
+  * Default: `false`
 
 Dependencies
 ------------

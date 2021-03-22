@@ -33,7 +33,7 @@
 
 - name: set fish as default shell
   user:
-    name: "{{ ansible_user }}"
+    name: "{{ ansible_user_id }}"
     shell: "{{ fish_binary_path }}"
   when: fish.set_default_shell is defined and fish.set_default_shell == True
   become: true
@@ -43,4 +43,41 @@
   template:
     src: config.fish.j2
     dest: "{{ ansible_env.HOME }}/.config/fish/config.fish"
-  tags: configure, configure-fis
+  tags: configure, configure-fish
+
+- name: get fish version for fisher installation
+  shell: |
+    fish --version | awk '{ print $3; }'
+  register: installed_fish_version
+  changed_when: false
+  failed_when: false
+  tags: fish, fisher, configure, configure-fish
+  when: fish.install_fisher is defined and fish.install_fisher == True
+
+- name: install fisher
+  shell: |
+    curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
+  args:
+    executable: "{{ fish_binary_path }}"
+    warn: false
+  when: "fish.install_fisher is defined and fish.install_fisher == True and installed_fish_version.stdout is version('3.0.0', '>=')"
+
+- name: get existing fisher plugins
+  shell:
+    cmd: fisher list
+  args:
+    executable: "{{ fish_binary_path }}"
+  register: installed_fisher_plugins_output
+  when: "fish.install_fisher is defined and fish.install_fisher == True and installed_fish_version.stdout is version('3.0.0', '>=')"
+
+- name: translate installed fisher plugins to list
+  set_fact: installed_fisher_plugins="{{installed_fisher_plugins_output.stdout.splitlines()}}"
+  when: "fish.install_fisher is defined and fish.install_fisher == True and installed_fish_version.stdout is version('3.0.0', '>=')"
+
+- name: install fisher plugins
+  shell:
+  args:
+    cmd: fisher install "{{ item }}"
+    executable: "{{ fish_binary_path }}"
+  loop: "{{ fish.fisher_plugins }}"
+  when: "fish.install_fisher is defined and fish.install_fisher == True and fish.fisher_plugins is defined and installed_fish_version.stdout is version('3.0.0', '>=') and not(item in installed_fisher_plugins)"

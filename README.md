@@ -16,6 +16,18 @@ Role Variables
   * Usage: If `true`, sets fish as the default shell for `ansible_user`.
   * Default: `false`
 
+* `install_fisher`
+  * Type: Boolean
+  * Usage: If `true` installs fisher for plugin management
+  * Default: `false`
+
+* `fisher_plugins`
+  * Type: List
+  * Usage: A list of plugins to install using fisher
+  * Default: Empty
+
+Note: As of right now this isn't intelligent about checking fisher plugins. It will always try to install fisher and the plugins.
+
 Dependencies
 ------------
 

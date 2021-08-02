@@ -9,6 +9,6 @@
 {% endif %}
 
 # load additional configuration files
-for file in (find "$HOME/.config/fish/fish.d" -iname "*.fish" -type f)
+for file in (find "$HOME/.config/fish/fish.d" -iname "*.fish" -type f) (find "$HOME/.config/fish/fish.d" -iname "*.fish" -type l)
   source $file
 end

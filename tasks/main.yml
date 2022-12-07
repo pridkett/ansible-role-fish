@@ -1,5 +1,14 @@
 ---
 # tasks file for fish
+- name: Update fish_binary_path
+  ansible.builtin.shell: printf "%s/bin/fish" $(brew --prefix)
+  register: fish_binary_path_output
+  when: ansible_pkg_mgr == 'homebrew'
+
+- name: Update fish_binary_path (pt2)
+  set_fact:
+    fish_binary_path: "{{ fish_binary_path_output.stdout }}"
+
 - name: Install Fish (homebrew)
   homebrew:
     name: fish

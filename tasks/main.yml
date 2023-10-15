@@ -1,28 +1,58 @@
 ---
 # tasks file for fish
-- name: Update fish_binary_path
-  ansible.builtin.shell: printf "%s/bin/fish" $(brew --prefix)
-  register: fish_binary_path_output
+- name: Install fish using Homebrew
+  block:
+    - name: Install Fish (homebrew)
+      homebrew:
+        name: fish
+        state: present
+      tags: install
+
+    - name: Get fish_binary_path for homebrew
+      ansible.builtin.shell: printf "%s/bin/fish" $(brew --prefix)
+      register: fish_binary_path_output
+      
+    - name: Set fish_binary_path variable
+      set_fact:
+        fish_binary_path: "{{ fish_binary_path_output.stdout }}"  
   when: ansible_pkg_mgr == 'homebrew'
 
-- name: Update fish_binary_path (pt2)
-  set_fact:
-    fish_binary_path: "{{ fish_binary_path_output.stdout }}"
+- name: Install fish using apt
+  block:
 
-- name: Install Fish (homebrew)
-  homebrew:
-    name: fish
-    state: present
-  when: ansible_pkg_mgr == 'homebrew'
-  tags: install
+    - name: Update apt repositories for Debian based systems
+      block:
+        - name: Add Fish repository to sources.list
+          lineinfile:
+            path: /etc/apt/sources.list.d/shells:fish:release:3.list
+            line: "deb http://download.opensuse.org/repositories/shells:/fish:/release:/3/Debian_{{ ansible_distribution_major_version }}/ /"
+            create: yes
+          when: ansible_distribution == 'Debian'
+    
+        - name: Add Fish repository key
+          shell: |
+            curl -fsSL https://download.opensuse.org/repositories/shells:fish:release:3/Debian_{{ ansible_distribution_major_version }}/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/shells_fish_release_3.gpg > /dev/null
+      when: ansible_distribution == 'Debian'
+      become: yes
+    
+      
+    - name: Install fish (apt)
+      apt:
+        name: ['fish']
+        state: present
+        update_cache: true
+      become: yes
+      tags: install
 
-- name: Install fish (apt)
-  apt:
-    name: ['fish']
-    state: present
-    update_cache: true
-  become: yes
-  tags: install
+    - name: Get fish_binary_path for apt
+      command:
+        cmd: which fish
+      register: fish_binary_path_result
+      changed_when: false
+    
+    - name: Set fish_binary_path variable
+      set_fact:
+        fish_binary_path: "{{ fish_binary_path_result.stdout }}"
   when: ansible_pkg_mgr == 'apt'
 
 - name: Create fish.d directory
@@ -68,7 +98,6 @@
     curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
   args:
     executable: "{{ fish_binary_path }}"
-    warn: false
   when: "fish.install_fisher is defined and fish.install_fisher == True and installed_fish_version.stdout is version('3.0.0', '>=')"
 
 - name: get existing fisher plugins

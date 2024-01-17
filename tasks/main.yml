@@ -34,7 +34,13 @@
             curl -fsSL https://download.opensuse.org/repositories/shells:fish:release:3/Debian_{{ ansible_distribution_major_version }}/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/shells_fish_release_3.gpg > /dev/null
       when: ansible_distribution == 'Debian'
       become: yes
-    
+
+    - name: Add Fish Shell PPA for Ubuntu based systems
+      ansible.builtin.apt_repository:
+        repo: ppa:fish-shell/release-3
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+      become: yes
       
     - name: Install fish (apt)
       apt:

@@ -125,3 +125,17 @@
     executable: "{{ fish_binary_path }}"
   loop: "{{ fish.fisher_plugins }}"
   when: "fish.install_fisher is defined and fish.install_fisher == True and fish.fisher_plugins is defined and installed_fish_version.stdout is version('3.0.0', '>=') and not(item in installed_fisher_plugins)"
+
+- name: Copy Jinja-templated files to fish.d
+  template:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d/{{ item | basename | regex_replace('\\.j2$', '') }}"
+  loop: "{{ fish.jinja_templates }}"
+  tags: configure, configure-fish
+
+- name: Copy non-templated files to fish.d
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.config/fish/fish.d/{{ item | basename }}"
+  loop: "{{ fish.plain_files }}"
+  tags: configure, configure-fish
